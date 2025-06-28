@@ -2,7 +2,10 @@ package com.education.librarymanagementsystem.controller;
 
 import com.education.librarymanagementsystem.dto.BookRequestDto;
 import com.education.librarymanagementsystem.dto.BookResponseDto;
+import com.education.librarymanagementsystem.dto.BookSearchRequestDto;
 import com.education.librarymanagementsystem.model.Book;
+import com.education.librarymanagementsystem.model.BookGenre;
+import com.education.librarymanagementsystem.model.BookStatus;
 import com.education.librarymanagementsystem.service.BookService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +28,7 @@ public class BookController {
         return ResponseEntity.ok(
                 bookService.getAllBooks().stream()
                         .map(this::toDto)
-                        .collect(Collectors.toList())
+                        .toList()
         );
     }
 
@@ -48,6 +51,15 @@ public class BookController {
         Book book = this.bookService.remove(bookId)
                 .orElseThrow(() -> new IllegalArgumentException("Book not found"));
         return ResponseEntity.status(HttpStatus.OK).body(toDto(book));
+    }
+
+    @PostMapping("/search")
+    ResponseEntity<List<BookResponseDto>> search(@RequestBody BookSearchRequestDto bookSearchRequestDto){
+
+        List<Book> books = this.bookService.search(bookSearchRequestDto);
+        return ResponseEntity.status(HttpStatus.OK).
+                body(books.stream().map(book-> this.toDto(book))
+                        .toList());
     }
 
     BookResponseDto toDto(Book book){

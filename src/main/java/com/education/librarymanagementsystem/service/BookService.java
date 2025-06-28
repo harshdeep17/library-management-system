@@ -1,7 +1,9 @@
 package com.education.librarymanagementsystem.service;
 
 import com.education.librarymanagementsystem.dto.BookRequestDto;
+import com.education.librarymanagementsystem.dto.BookSearchRequestDto;
 import com.education.librarymanagementsystem.model.Book;
+import com.education.librarymanagementsystem.model.BookGenre;
 import com.education.librarymanagementsystem.model.BookStatus;
 import com.education.librarymanagementsystem.repository.BookRepository;
 import org.springframework.stereotype.Service;
@@ -45,5 +47,30 @@ public class BookService {
 
     public List<Book> getAllBooks(){
         return this.bookRepository.getAllBooks();
+    }
+
+    public List<Book> search(BookSearchRequestDto bookSearchRequestDto){
+        String query = bookSearchRequestDto.getQuery();
+        BookStatus status = bookSearchRequestDto.getStatus();
+        BookGenre genre = bookSearchRequestDto.getGenre();
+
+        String cleanedQuery = query != null
+                ? query.replaceAll("\\p{Punct}", "").toLowerCase()
+                : "";
+
+        return this.getAllBooks().stream()
+                .filter(book -> {
+                    Boolean queryMatches =  (book.getTitle() != null && book.getTitle().replaceAll("\\p{Punct}", "").toLowerCase().contains(cleanedQuery)) ||
+                            (book.getAuthor() != null && book.getAuthor().replaceAll("\\p{Punct}", "").toLowerCase().contains(cleanedQuery)) ||
+                            (book.getIsbn() != null && book.getIsbn().replaceAll("\\p{Punct}", "").toLowerCase().contains(cleanedQuery));
+
+                    Boolean statusMatches = status != null ? book.getStatus().equals(status) : true;
+                    Boolean genreMatches = genre != null ? book.getGenre().equals(genre) : true;
+                    return queryMatches && statusMatches && genreMatches;
+                })
+//                .sorted(Comparator.comparing(Book::getTitle)) // Optional sorting
+                .skip((long) bookSearchRequestDto.getPage() * bookSearchRequestDto.getSize())
+                .limit(bookSearchRequestDto.getSize())
+                .toList();
     }
 }

@@ -14,8 +14,8 @@ public class BookRepository {
 
     public BookRepository(){
         this.books = new CopyOnWriteArrayList<>();
-        Book book1 = new Book();
-        books.add(book1);
+//        Book book1 = new Book();
+//        books.add(book1);
     }
 
     public void save(Book book){
