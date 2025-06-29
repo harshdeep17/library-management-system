@@ -10,11 +10,11 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class BookLock {
-    private String bookId;
+    private String bookCopyId;
     private LocalDateTime lockedAt;
 
-    public BookLock(String bookId){
-        this.bookId = bookId;
+    public BookLock(String bookCopyId){
+        this.bookCopyId = bookCopyId;
         this.lockedAt = LocalDateTime.now();
     }
 }

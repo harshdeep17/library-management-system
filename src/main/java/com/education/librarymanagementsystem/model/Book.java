@@ -17,9 +17,5 @@ public class Book extends BaseModel{
     private String publisher;
     private Double price;
     private String isbn;
-    private String issuedBy;
     private BookGenre genre;
-    private BookStatus status;
-    private LocalDateTime issuedAt;
-    private LocalDateTime dueDate;
 }

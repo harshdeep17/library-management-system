@@ -1,10 +1,12 @@
 package com.education.librarymanagementsystem.service;
 
+import com.education.librarymanagementsystem.dto.BookIssueRequestDto;
 import com.education.librarymanagementsystem.dto.BookRequestDto;
 import com.education.librarymanagementsystem.dto.BookSearchRequestDto;
 import com.education.librarymanagementsystem.model.Book;
 import com.education.librarymanagementsystem.model.BookGenre;
-import com.education.librarymanagementsystem.model.BookStatus;
+import com.education.librarymanagementsystem.model.BookLock;
+import com.education.librarymanagementsystem.model.BookCopyStatus;
 import com.education.librarymanagementsystem.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
@@ -16,8 +18,13 @@ import java.util.UUID;
 @Service
 public class BookService {
     private BookRepository bookRepository;
-    public BookService(BookRepository bookRepository){
+    private BookCopyService bookCopyService;
+    private BookLockService bookLockService;
+    public BookService(BookRepository bookRepository, BookCopyService bookCopyService,
+                       BookLockService bookLockService){
         this.bookRepository = bookRepository;
+        this.bookCopyService = bookCopyService;
+        this.bookLockService = bookLockService;
     }
 
     public Optional<Book> addBook(BookRequestDto bookRequestDto){
@@ -30,7 +37,6 @@ public class BookService {
         book.setPublisher(bookRequestDto.getPublisher());
         book.setPrice(bookRequestDto.getPrice());
         book.setGenre(bookRequestDto.getGenre());
-        book.setStatus(BookStatus.AVAILABLE);
         book.setCreatedAt(LocalDateTime.now());
         book.setUpdatedAt(LocalDateTime.now());
         this.bookRepository.save(book);
@@ -51,7 +57,7 @@ public class BookService {
 
     public List<Book> search(BookSearchRequestDto bookSearchRequestDto){
         String query = bookSearchRequestDto.getQuery();
-        BookStatus status = bookSearchRequestDto.getStatus();
+        BookCopyStatus status = bookSearchRequestDto.getStatus();
         BookGenre genre = bookSearchRequestDto.getGenre();
 
         String cleanedQuery = query != null
@@ -64,7 +70,7 @@ public class BookService {
                             (book.getAuthor() != null && book.getAuthor().replaceAll("\\p{Punct}", "").toLowerCase().contains(cleanedQuery)) ||
                             (book.getIsbn() != null && book.getIsbn().replaceAll("\\p{Punct}", "").toLowerCase().contains(cleanedQuery));
 
-                    Boolean statusMatches = status != null ? book.getStatus().equals(status) : true;
+                    Boolean statusMatches = status != null ? this.bookCopyService.existsCopyWithStatus(book.getId(), status) : true;
                     Boolean genreMatches = genre != null ? book.getGenre().equals(genre) : true;
                     return queryMatches && statusMatches && genreMatches;
                 })

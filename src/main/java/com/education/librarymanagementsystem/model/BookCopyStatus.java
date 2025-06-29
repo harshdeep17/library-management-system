@@ -1,6 +1,6 @@
 package com.education.librarymanagementsystem.model;
 
-public enum BookStatus {
+public enum BookCopyStatus {
     AVAILABLE,
     UNAVAILABLE,
     RESERVED,
